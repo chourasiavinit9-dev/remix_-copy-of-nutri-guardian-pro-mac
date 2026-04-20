@@ -1,0 +1,11 @@
+
+@layer utilities {
+  .animate-wave {
+    animation: wave 1s infinite ease-in-out;
+  }
+}
+
+@keyframes wave {
+  0%, 100% { transform: scaleY(0.4); }
+  50% { transform: scaleY(1.2); }
+}

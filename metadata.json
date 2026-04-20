@@ -1,0 +1,8 @@
+{
+  "name": "Remix: Copy of Nutri-Guardian Pro mac",
+  "description": "Clinical-grade nutritional audit tool with AI diagnostic label scanning and dynamic health budgeting.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}

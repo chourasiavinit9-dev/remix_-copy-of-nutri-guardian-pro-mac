@@ -1,0 +1,158 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nutri-Guardian Pro | Modern Clinical UI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+      :root {
+        --primary: #10B981;
+        --primary-soft: #ECFDF5;
+        --surface: #FFFFFF;
+        --background: #F8FAFC;
+        --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+        --card-hover-shadow: 0 25px 50px -12px rgba(16, 185, 129, 0.08);
+      }
+      body {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        background-color: var(--background);
+        color: #0F172A;
+        -webkit-font-smoothing: antialiased;
+        overflow-x: hidden;
+      }
+      .glass {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(16px) saturate(180%);
+        -webkit-backdrop-filter: blur(16px) saturate(180%);
+      }
+      .bento-card {
+        background: white;
+        border: 1px solid rgba(226, 232, 240, 0.6);
+        border-radius: 1.5rem;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: var(--card-shadow);
+      }
+      .bento-card:hover {
+        box-shadow: var(--card-hover-shadow);
+        transform: translateY(-4px);
+        border-color: rgba(16, 185, 129, 0.2);
+      }
+      .saas-button {
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .saas-button:active {
+        transform: scale(0.96);
+      }
+      .ai-gradient-bg {
+        background: linear-gradient(135deg, #10B981 0%, #3B82F6 100%);
+      }
+      .ai-shimmer {
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        background-size: 200% 100%;
+        animation: shimmer 2s infinite;
+      }
+      @keyframes shimmer {
+        0% { background-position: -200% 0; }
+        100% { background-position: 200% 0; }
+      }
+      .animate-float {
+        animation: float 6s ease-in-out infinite;
+      }
+      @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+      }
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 5px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #E2E8F0;
+        border-radius: 10px;
+      }
+
+      /* Doctor Mode - High Contrast, Data Dense */
+      .doctor-mode {
+        filter: grayscale(1) contrast(1.2);
+        background-color: #000 !important;
+        color: #fff !important;
+      }
+      .doctor-mode .bento-card {
+        background: #111 !important;
+        border: 1px solid #333 !important;
+        border-radius: 0.5rem !important; /* Sharper corners */
+        box-shadow: none !important;
+      }
+      .doctor-mode .text-slate-900, 
+      .doctor-mode .text-slate-700,
+      .doctor-mode .text-slate-600 {
+        color: #fff !important;
+      }
+      .doctor-mode .text-slate-400,
+      .doctor-mode .text-slate-500 {
+        color: #ccc !important;
+      }
+      .doctor-mode .bg-white {
+        background-color: #111 !important;
+      }
+      .doctor-mode .bg-slate-50,
+      .doctor-mode .bg-slate-100 {
+        background-color: #222 !important;
+      }
+      .doctor-mode .border-slate-100,
+      .doctor-mode .border-slate-200 {
+        border-color: #444 !important;
+      }
+      .doctor-mode .text-emerald-600,
+      .doctor-mode .text-emerald-500,
+      .doctor-mode .text-rose-600,
+      .doctor-mode .text-rose-500 {
+        color: #fff !important;
+        text-decoration: underline;
+      }
+      .doctor-mode .bg-emerald-50,
+      .doctor-mode .bg-rose-50 {
+        background-color: #333 !important;
+      }
+
+      @media print {
+        nav, header, .no-print, button, .saas-button { display: none !important; }
+        body { background: white !important; color: black !important; padding: 0 !important; margin: 0 !important; }
+        main { padding: 20px !important; margin: 0 !important; max-width: none !important; width: 100% !important; }
+        .bento-card { border: 1px solid #eee !important; box-shadow: none !important; break-inside: avoid; margin-bottom: 1rem !important; }
+        .glass { background: white !important; backdrop-filter: none !important; border: none !important; }
+        .text-white { color: black !important; }
+        .bg-slate-900 { background: white !important; border: 2px solid black !important; color: black !important; }
+        .text-emerald-400, .text-emerald-500, .text-emerald-600 { color: #059669 !important; }
+        .bg-emerald-50, .bg-slate-50 { background-color: #f8fafc !important; border: 1px solid #e2e8f0 !important; }
+        .print\:block { display: block !important; }
+        .print-header { border-bottom: 4px solid #10B981; padding-bottom: 1.5rem; margin-bottom: 2.5rem; display: none; }
+        @media print {
+          .print-header { display: block !important; }
+          .print-grid { display: grid !important; grid-template-columns: repeat(3, 1fr) !important; gap: 1rem !important; background: #f8fafc !important; padding: 1rem !important; border-radius: 0.75rem !important; border: 1px solid #e2e8f0 !important; }
+          .print-label { font-size: 10px !important; text-transform: uppercase !important; font-weight: 700 !important; color: #64748b !important; }
+          .print-value { font-size: 14px !important; font-weight: 700 !important; color: #0f172a !important; }
+        }
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
+    "react-router-dom": "https://esm.sh/react-router-dom@^7.11.0",
+    "@google/genai": "https://esm.sh/@google/genai@^1.34.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body class="custom-scrollbar">
+    <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>
