@@ -15,9 +15,8 @@ const getDiseaseContext = (userProfile: UserProfile): string => {
   return `Condition: ${userProfile.chronicDisease}.`;
 };
 
-const isSimulationMode = (): boolean => {
-  return false; // Proxied via backend now, Simulation logic removed
-};
+
+
 
 /**
  * Converts raw Gemini API errors into human-readable messages.
@@ -86,131 +85,10 @@ const parseJSON = (text: string | undefined): any => {
   }
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Schemas & System Instructions
-// ─────────────────────────────────────────────────────────────────────────────
-
-const SYSTEM_INSTRUCTION = `You are Nutri-Guardian Pro, a clinical nutritional assistant for chronic disease management.
-You perform a "Deep Clinical Audit" of food labels and products.
-
-CORE SCAN PROTOCOLS:
-1. VALIDATION: If the input (text or image) contains offensive content, is unrelated to food, or is not a consumable product, you MUST return a JSON object with a 'status' of 'ERROR' and a 'medicalWarning' explaining the rejection.
-2. NUTRIENT EXTRACTION: Calories, Sodium (mg), Sugar (g), Protein (g), Vitamins (as % Daily Value). ALL values MUST be numbers (not strings).
-3. SAFETY CHECK (RED FLAGS): Scan ingredients for specific medical triggers based on the patient's condition.
-4. INGREDIENT LABORATORY: Categorize EACH ingredient into one of: Core Matrix, Refined Sugars, Synthetic Sweeteners, Bio-Preservatives, Industrial Additives, Essential Nutrients, Clinical Triggers, Other.
-5. CLINICAL OPTIMIZATION: Provide 2-3 specific preparation or usage hacks to lower nutrient risks.
-6. CLINICAL SCORING: Assign 'clinicalScore' (1-5) and 'calorieScore' (1-5) based on disease adherence.
-
-RESPONSE FORMAT: ALWAYS return ONLY a single valid JSON object. No markdown wrapper.`;
-
-const PRODUCT_RESPONSE_SCHEMA = {
-  type: Type.OBJECT,
-  properties: {
-    status: { type: Type.STRING, description: "One of: 🟢, 🟡, 🔴, ERROR" },
-    productName: { type: Type.STRING },
-    clinicalScore: { type: Type.INTEGER },
-    calorieScore: { type: Type.INTEGER },
-    keyNutrients: {
-      type: Type.OBJECT,
-      properties: {
-        calories: { type: Type.NUMBER },
-        sodium: { type: Type.NUMBER },
-        sugar: { type: Type.NUMBER },
-        protein: { type: Type.NUMBER },
-        vitamins: { type: Type.NUMBER },
-        potassium: { type: Type.NUMBER },
-        phosphorus: { type: Type.NUMBER }
-      },
-      required: ['calories', 'sodium', 'sugar', 'protein', 'vitamins']
-    },
-    redFlags: {
-      type: Type.ARRAY,
-      items: {
-        type: Type.OBJECT,
-        properties: {
-          ingredient: { type: Type.STRING },
-          reason: { type: Type.STRING },
-          severity: { type: Type.STRING, description: "CRITICAL or CAUTION" }
-        },
-        required: ['ingredient', 'reason', 'severity']
-      }
-    },
-    ingredientsBreakdown: {
-      type: Type.ARRAY,
-      items: {
-        type: Type.OBJECT,
-        properties: {
-          name: { type: Type.STRING },
-          category: { type: Type.STRING },
-          description: { type: Type.STRING }
-        },
-        required: ['name', 'category']
-      }
-    },
-    optimizationTips: {
-      type: Type.ARRAY,
-      items: { type: Type.STRING }
-    },
-    medicalWarning: { type: Type.STRING },
-    dailyImpact: {
-      type: Type.OBJECT,
-      properties: {
-        calories: { type: Type.STRING },
-        sodium: { type: Type.STRING },
-        sugar: { type: Type.STRING },
-        protein: { type: Type.STRING },
-        vitamins: { type: Type.STRING }
-      },
-      required: ['calories', 'sodium', 'sugar', 'protein', 'vitamins']
-    },
-    recommendation: {
-      type: Type.OBJECT,
-      properties: {
-        verdict: { type: Type.STRING }
-      },
-      required: ['verdict']
-    },
-    compliance: {
-      type: Type.OBJECT,
-      properties: {
-        whoSaltTarget: { type: Type.STRING },
-        nutriScore: { type: Type.STRING }
-      },
-      required: ['whoSaltTarget', 'nutriScore']
-    },
-    voiceResponse: { type: Type.STRING }
-  },
-  required: ['status', 'clinicalScore', 'calorieScore', 'keyNutrients', 'redFlags', 'medicalWarning', 'dailyImpact', 'recommendation', 'compliance', 'voiceResponse', 'ingredientsBreakdown', 'optimizationTips']
-};
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Simulation Fixtures
-// ─────────────────────────────────────────────────────────────────────────────
-
-const MOCK_PRODUCT_RESULT = (name: string): AnalysisResult => ({
-  status: '🟢',
-  productName: name,
-  clinicalScore: 4,
-  calorieScore: 4,
-  keyNutrients: { calories: 150, sodium: 80, sugar: 5, protein: 10, vitamins: 12, potassium: 300, phosphorus: 150 },
-  redFlags: [],
-  ingredientsBreakdown: [
-    { name: 'Whole Grain Oats', category: 'Core Matrix', description: 'High-fiber complex carbohydrate. Clinically safe.' },
-    { name: 'Sea Salt', category: 'Industrial Additives', description: 'Sodium contributor. Monitor intake.' }
-  ],
-  optimizationTips: [
-    'Pair with a protein source to stabilize blood glucose.',
-    'Check total serving size — nutrients shown are per 100g.'
-  ],
-  medicalWarning: '⚠️ SIMULATION MODE: No GEMINI_API_KEY detected. Set GEMINI_API_KEY in .env.local to enable live AI analysis.',
-  dailyImpact: { calories: '8%', sodium: '4%', sugar: '5%', protein: '14%', vitamins: '12%' },
-  recommendation: { verdict: 'SAFE' },
-  compliance: { whoSaltTarget: 'PASSED', nutriScore: 'B' },
-  voiceResponse: 'This product appears clinically safe. Running in simulation mode — enable your API key for real analysis.'
-});
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Exported Service Functions
+// Exported Service Functions  
+// All AI calls are proxied to Cloud Functions backend. No API key in frontend.
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const searchAndAnalyzeProduct = async (query: string, userProfile: UserProfile): Promise<AnalysisResult> => {
