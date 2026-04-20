@@ -12,6 +12,12 @@ export default defineConfig(({ mode }) => {
       plugins: [
         react(),
       ],
+      define: {
+        // Inject backend URL for Cloud Functions proxy — no API key on client!
+        'process.env.VITE_BACKEND_URL': JSON.stringify(
+          env.VITE_BACKEND_URL || 'http://localhost:5001/nutri-guardian-pro/us-central1'
+        ),
+      },
       resolve: {
         alias: {
           '@': path.resolve(__dirname, '.'),
@@ -19,3 +25,4 @@ export default defineConfig(({ mode }) => {
       }
     };
 });
+
