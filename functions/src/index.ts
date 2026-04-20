@@ -264,6 +264,68 @@ RESPONSE FORMAT: ALWAYS return valid JSON within a code block.`;
   });
 });
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Head-to-Head Product Comparison Proxy
+// ─────────────────────────────────────────────────────────────────────────────
+const CompareProductsSchema = z.object({
+  p1: z.object({
+    productName: z.string().optional(),
+    clinicalScore: z.number(),
+    keyNutrients: z.object({
+      sodium: z.number(), sugar: z.number(), protein: z.number(),
+      calories: z.number(), vitamins: z.number()
+    })
+  }),
+  p2: z.object({
+    productName: z.string().optional(),
+    clinicalScore: z.number(),
+    keyNutrients: z.object({
+      sodium: z.number(), sugar: z.number(), protein: z.number(),
+      calories: z.number(), vitamins: z.number()
+    })
+  }),
+  diseaseContext: z.string()
+});
+
+export const compareProductsProxy = functions.https.onRequest(async (req, res) => {
+  return cors(req, res, async () => {
+    try {
+      const parsed = CompareProductsSchema.safeParse(req.body.data);
+      if (!parsed.success) {
+        return res.status(400).send({ error: 'Invalid payload' });
+      }
+
+      const { p1, p2, diseaseContext } = parsed.data;
+
+      const prompt = `You are a senior clinical nutritionist. Compare these two food products for a patient with ${diseaseContext}.
+      
+Product A: "${p1.productName || 'Product A'}" — Clinical Score: ${p1.clinicalScore}/5, Sodium: ${p1.keyNutrients.sodium}mg, Sugar: ${p1.keyNutrients.sugar}g, Protein: ${p1.keyNutrients.protein}g, Calories: ${p1.keyNutrients.calories}kcal.
+Product B: "${p2.productName || 'Product B'}" — Clinical Score: ${p2.clinicalScore}/5, Sodium: ${p2.keyNutrients.sodium}mg, Sugar: ${p2.keyNutrients.sugar}g, Protein: ${p2.keyNutrients.protein}g, Calories: ${p2.keyNutrients.calories}kcal.
+
+Return ONLY a valid JSON object:
+{
+  "betterChoice": "Product name string",
+  "product1Score": 1-5,
+  "product2Score": 1-5,
+  "clinicalReasoning": "string",
+  "comparisonPoints": [{"nutrient": "Sodium", "product1Value": "180mg", "product2Value": "220mg", "verdict": "Product A is lower"}],
+  "voiceResponse": "string summary"
+}`;
+
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.0-flash-lite',
+        contents: prompt,
+        config: { responseMimeType: 'application/json' }
+      });
+
+      return res.status(200).send({ data: { result: response.text } });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).send({ error: 'Internal Server Error' });
+    }
+  });
+});
+
 // Proxy for analyzing product images
 const AnalyzeImageSchema = z.object({
   imageB64: z.string().min(1),

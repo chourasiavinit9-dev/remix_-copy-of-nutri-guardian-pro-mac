@@ -1,153 +1,300 @@
-<
-</div>
 <div align="center">
-<img src="https://img.shields.io/badge/Hack2Skill-PromptWars%202025-blueviolet?style=for-the-badge&logo=bolt" />
-<img src="https://img.shields.io/badge/Powered%20by-Gemini%20AI-4285F4?style=for-the-badge&logo=google" />
-<img src="https://img.shields.io/badge/Built%20with-React%20%2B%20Firebase-F6820D?style=for-the-badge&logo=firebase" />
+
+<img src="https://img.shields.io/badge/Hack2Skill-PromptWars%202026-blueviolet?style=for-the-badge&logo=bolt&logoColor=white" />
+<img src="https://img.shields.io/badge/Powered%20by-Google%20Gemini%202.0-4285F4?style=for-the-badge&logo=google&logoColor=white" />
+<img src="https://img.shields.io/badge/Stack-React%20%2B%20Firebase%20%2B%20Cloud%20Run-F6820D?style=for-the-badge&logo=firebase&logoColor=white" />
+<img src="https://img.shields.io/badge/Status-Production%20Ready-brightgreen?style=for-the-badge" />
+
 <br /><br />
+
 # 🛡️ Nutri-Guardian Pro
-### *Clinical Nutrition Intelligence, Powered by Gemini*
-**Hack2Skill PromptWars 2025 Submission**
-*An AI-first, clinical-grade nutrition auditing platform for chronic disease patients — built entirely around precision prompt engineering with Google Gemini.*
+### *Clinical Nutrition Intelligence for India's Chronic Disease Crisis*
+
+**Hack2Skill PromptWars 2026 — Gemini AI Track Submission**
+
+> *An AI-first, clinical-grade platform transforming how 100M+ Indians with Diabetes, Hypertension & CKD navigate food safety — built entirely on precision Gemini prompt engineering.*
+
+[🔴 Live Demo](https://nutri-guardian-pro.web.app) &nbsp;|&nbsp; [📹 Demo Video](#) &nbsp;|&nbsp; [🏗️ Architecture](#️-system-architecture)
+
 </div>
+
 ---
-## 🏆 Hackathon Context
-> **Competition:** Hack2Skill — PromptWars 2025
-> **Theme:** Build real-world AI solutions using advanced prompt engineering techniques.
-> **Core Tech Mandate:** Google Gemini AI (Gemini 2.5 Flash / Pro)
-Nutri-Guardian Pro was designed from the ground up as a **prompt-engineering-first** application. The AI isn't a bolt-on feature — it **is** the product. Every user interaction routes through a carefully engineered Gemini prompt pipeline to deliver clinical-grade nutrition intelligence to India's 100M+ chronic disease population.
+
+## 🚨 The Problem — A Daily Life-or-Death Question
+
+India has **101 million diabetics**, **220 million hypertensives**, and **7.5 million CKD patients**. Every single day, each one faces the same unanswered question:
+
+> **_"Is this food safe for me?"_**
+
+Existing nutrition apps give **generic, population-wide data**. They don't know your HbA1c. They don't know your GFR. They don't know that potassium in that banana can be fatal for your Stage 3 kidney failure.
+
+**Nutri-Guardian Pro** closes this gap with real-time, **personalized clinical reasoning** powered by Google Gemini.
+
 ---
-## 🩺 Problem Statement
-Patients managing **Type 2 Diabetes, Hypertension, and CKD (Chronic Kidney Disease)** face a daily, life-or-death question: *"Is this food safe for me?"* Existing nutrition apps give generic info. Nutri-Guardian Pro gives **personalized clinical verdicts** — in real time, from any food label or barcode.
----
-## ✨ Core AI Features (Prompt Engineering Highlights)
-Every feature below is powered by a distinct, structured Gemini prompt:
-### 1. 🔬 Deep Clinical Audit (Scan & Search)
-A **multi-stage system prompt** instructs Gemini to act as a clinical nutritional auditor:
-- **Input**: Camera photo of a food label OR a product name/barcode
-- **Structured JSON Schema**: Forces Gemini to return a strict, machine-readable schema covering `status`, `clinicalScore`, `keyNutrients`, `redFlags`, `ingredientsBreakdown`, `optimizationTips`, `dailyImpact`, and `compliance`
-- **Disease-Aware**: The user's chronic disease is injected into the prompt context, so AI reasoning is always personalized (e.g. potassium limits for CKD; glycemic risk flags for Diabetes)
-- **Safety Guardrails**: The prompt includes explicit fallback logic — off-topic queries return an `ERROR` status with a `medicalWarning`, blocking prompt injection and non-food inputs
-### 2. ↔️ Head-to-Head Clinical Comparison
-- Provide two scanned products and Gemini returns a `betterChoice` verdict with granular `comparisonPoints` nutrient-by-nutrient
-- The prompt provides both products' full clinical data and asks for a structured ranking with `clinicalReasoning`
-### 3. 🥗 AI Meal Planner (Smart Pantry)
-- Ingredients from the user's fridge are sent to a meal suggestion prompt
-- Gemini returns a complete recipe with `clinicalScore`, `swaps`, `clinicalTips`, `estimatedNutrients`, and step-by-step `instructions`
-- Meal is validated before suggestion against the user's disease restrictions
-### 4. 🩺 Symptom Checker (Clinical Consult)
-- User-reported symptoms flow through a clinical consultation prompt that returns `possibleCondition`, `confidence`, `suggestedMedication`, `lifestyleAdvice`, `avoidanceProtocol`, and an `urgency` level (Low → Emergency)
-- Designed with strong medical disclaimers baked into the prompt
----
-## 🏗️ Architecture
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                     React Frontend (Vite)                       │
-│   App.tsx → geminiService.ts (Fetch calls to Cloud Functions)   │
-└──────────────────────────┬──────────────────────────────────────┘
-                           │ HTTPS Proxy (No Key on Client)
-                           ▼
-┌─────────────────────────────────────────────────────────────────┐
-│             Firebase Cloud Functions (Node.js)                  │
-│  searchProductProxy | analyzeImageProxy | suggestMealProxy      │
-│  compareProductsProxy | clinicalConsult                         │
-└──────────────────────────┬──────────────────────────────────────┘
-                           │ @google/genai SDK
-                           ▼
-                  ┌─────────────────────┐
-                  │   Google Gemini API  │
-                  │  (gemini-2.5-flash)  │
-                  └─────────────────────┘
-```
-**Security design**: The `GEMINI_API_KEY` is **never exposed to the browser**. All AI calls are proxied through Firebase Cloud Functions, making this production-safe.
----
-## 🔑 Prompt Engineering Techniques Used
-| Technique | Where Applied |
+
+## 🏆 Hackathon Alignment
+
+| Judging Criterion | Our Implementation |
 |---|---|
-| **Role-based system instructions** | Gemini is assigned the "Nutri-Guardian Pro Clinical Auditor" persona |
-| **Structured JSON Schema output** | Enforced via `responseMimeType: 'application/json'` and Zod-like schema |
-| **Dynamic context injection** | User's disease, weight, age injected per-request |
-| **Zero-shot classification** | Food safety status: 🟢 Safe / 🟡 Caution / 🔴 Danger |
-| **Few-shot nutritional reasoning** | `dailyImpact` section contextualizes values against WHO/disease targets |
-| **Output sanitization** | DOMPurify + recursive sanitizer prevent XSS from AI responses |
-| **Input validation guard** | System prompt explicitly rejects non-food/offensive queries |
-| **Open Food Facts fallback** | Barcode lookup enriches the prompt context before Gemini analysis |
+| **🎯 Problem Impact** | Addresses India's chronic disease nutrition gap for 100M+ patients |
+| **💡 Innovation** | 8-layer Gemini prompt engineering pipeline with disease-aware AI reasoning |
+| **⚙️ Technical Depth** | Secure backend proxy, RAG pipeline, Zod validation, DOMPurify XSS defense |
+| **🎨 UX/Design** | Bento-grid clinical UI, real-time nutrient budget, animated audit reports |
+| **📚 Documentation** | Full architecture diagrams, prompt engineering breakdown, deployment guide |
+
 ---
-## 🚀 Running the Project Locally
-### Prerequisites
-- Node.js ≥ 18 & npm
-- A Google Gemini API Key (from [Google AI Studio](https://aistudio.google.com/))
-- Firebase CLI (for running functions locally): `npm install -g firebase-tools`
-### Frontend Setup
-```bash
-# 1. Install frontend dependencies
-npm install
-# 2. Add your Gemini API Key to the env file
-echo "GEMINI_API_KEY=your_key_here" > .env.local
-# 3. Start the dev server
-npm run dev
-```
-### Backend Setup (Firebase Functions)
-```bash
-cd functions
-# Install function dependencies
-npm install
-# Run emulator locally (emulates Firebase Functions)
-firebase emulators:start --only functions
-```
-> The frontend will automatically point to `localhost:5001` when running in dev mode.
+
+## ✨ Core Features & Prompt Engineering Pipeline
+
+Every feature is powered by a distinct, carefully engineered Gemini prompt. The AI is not a bolt-on — **it is the product**.
+
+### 🔬 1. Deep Clinical Audit Scanner
+**What it does:** Point your camera at any food label (or type/scan a barcode) and get a full clinical safety report in under 3 seconds.
+
+**Prompt Engineering Techniques:**
+- **Role-based system instruction:** Gemini is assigned the `"Nutri-Guardian Pro Clinical Auditor"` persona with explicit medical reasoning protocols
+- **Structured JSON Schema enforcement:** `responseMimeType: 'application/json'` forces a strict output schema with `status`, `clinicalScore`, `keyNutrients`, `redFlags`, `ingredientsBreakdown`, `optimizationTips`, `dailyImpact`, and `compliance`
+- **Dynamic context injection:** User's chronic disease, age, and weight are injected per-request — Gemini flags potassium for CKD, glycemic load for Diabetes, sodium for Hypertension
+- **Zero-shot safety classification:** Returns 🟢 Safe / 🟡 Caution / 🔴 Danger with clinical reasoning
+- **Input validation guardrail:** System prompt explicitly instructs Gemini to reject non-food, offensive, or injection-attempt queries with an `ERROR` status + `medicalWarning`
+- **Open Food Facts integration:** Barcode queries first resolve product data from Open Food Facts API, feeding real product context into the Gemini prompt to prevent hallucination
+
+**Output includes:** Clinical score, per-nutrient risk flags, ingredient-by-ingredient categorization (Core Matrix / Synthetic Sweeteners / Clinical Triggers etc.), WHO compliance check, and 3 clinician-approved optimization tips.
+
 ---
-## 🗂️ Project Structure
-```
-nutri-guardian-pro/
-├── App.tsx                  # Root layout, routing, global state
-├── geminiService.ts         # All AI integration (fetch → Cloud Functions)
-├── types.ts                 # Shared TypeScript types & interfaces
-├── constants.tsx            # Disease-specific clinical guardrails
-├── store.ts / db.ts         # Zustand store & Dexie.js IndexedDB
-├── components/
-│   ├── Dashboard.tsx        # Daily health budget overview
-│   ├── Scanner.tsx          # Barcode/image scanner → Gemini audit
-│   ├── FridgeManager.tsx    # Smart pantry + meal suggestions
-│   ├── SymptomChecker.tsx   # AI clinical consultation
-│   ├── EatingHistory.tsx    # Nutrition log & journal
-│   └── ProfileSettings.tsx  # Chronic disease profile setup
-└── functions/src/
-    └── index.ts             # Firebase Cloud Functions (AI proxy layer)
-```
+
+### ↔️ 2. Head-to-Head Clinical Comparison
+**What it does:** Scan Product A, then Product B — Gemini returns a clinically-reasoned verdict on which is safer for YOUR condition.
+
+**Prompt Engineering Techniques:**
+- Both products' full clinical profiles are serialized and injected into a comparative reasoning prompt
+- Gemini returns a structured `comparisonPoints` array with nutrient-by-nutrient verdicts and a `clinicalReasoning` narrative
+- A `voiceResponse` field is generated for text-to-speech accessibility
+
 ---
+
+### 🥗 3. Neural Recipe Lab (Smart Pantry AI)
+**What it does:** Add your fridge ingredients to the Clinical Pantry and get a personalized, disease-safe meal suggestion with step-by-step instructions.
+
+**Prompt Engineering Techniques:**
+- **Few-shot nutritional reasoning:** Ingredients are ranked by disease relevance before being passed to Gemini
+- **Constraint-aware generation:** The prompt explicitly requires the recipe to adhere to the patient's dietary restrictions (e.g., low-potassium for CKD, low-GI for Diabetes)
+- Output includes `clinicalTips` (e.g., *"Rinse canned beans to cut sodium by ~40%"*), `swaps` for healthier alternatives, and full macronutrient breakdown
+
+---
+
+### 🩺 4. AI Clinical Symptom Consultant
+**What it does:** Describe your symptoms and get a structured clinical triage analysis with urgency classification, medication contraindications, and red flags.
+
+**Prompt Engineering Techniques:**
+- **Sandwich defense:** User input is wrapped in `<patient_data>` XML tags with explicit instructions to treat content as read-only data — prevents prompt injection
+- **Urgency classification:** Returns `Low → Medium → High → Emergency` triage level
+- **Disease-aware medication filtering:** Suggested medications are contextualized against the user's chronic condition (e.g., NSAIDs flagged for CKD)
+- **Built-in Firestore rate limiting:** 5-second cooldown per user to prevent abuse
+
+---
+
+### 📊 5. Daily Clinical Health Budget (Dashboard)
+Real-time nutrient tracking with clinical guardrails:
+- Visual progress bars for Calories, Sodium, Sugar, Protein, Vitamins against WHO/disease-specific daily limits
+- Automatic daily reset at midnight
+- Eating history log with PDF export (`jsPDF`)
+- "Clinical Flush" emergency reset for testing
+
+---
+
+## 🏗️ System Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                        User Browser                                 │
+│                   React 19 + Vite + TypeScript                      │
+│                                                                     │
+│  Scanner  │  Pantry AI  │  Symptom Checker  │  Dashboard  │  Scan  │
+└────────────────────────┬────────────────────────────────────────────┘
+                         │  fetch() HTTPS POST (No API key on client)
+                         ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│               Firebase Cloud Functions (Node.js 20)                 │
+│                                                                     │
+│  searchProductProxy   │  analyzeImageProxy  │  suggestMealProxy     │
+│  compareProductsProxy │  clinicalConsult    │  analyzeLabReport     │
+│  searchClinicalGuidelines (RAG)             │  generateEmbeddings   │
+│                                                                     │
+│  ✅ Zod input validation (injection defense)                        │
+│  ✅ CORS origin policy (production domains only)                    │
+│  ✅ Firestore rate limiting (per-user cooldowns)                    │
+└────────────────────────┬────────────────────────────────────────────┘
+                         │  @google/genai SDK (GEMINI_API_KEY secure)
+                         ▼
+              ┌──────────────────────┐
+              │  Google Gemini API   │
+              │  gemini-2.0-flash    │
+              │  text-embedding-004  │
+              └──────────────────────┘
+                         │
+                         ▼
+              ┌──────────────────────┐
+              │  Cloud Firestore     │
+              │  (RAG + Rate Limits) │
+              └──────────────────────┘
+```
+
+**Key Security Properties:**
+- 🔐 `GEMINI_API_KEY` is **never in the browser bundle** — removed from `vite.config.ts` `define` block
+- 🛡️ All AI calls are proxied through Cloud Functions on the server
+- 🧼 All AI responses sanitized via DOMPurify (XSS defense)
+- 🔒 Input validated via Zod schemas before any Gemini call (SQL/NoSQL injection defense)
+- 🚧 Prompt injection blocked via XML sandwich wrapping and `<patient_data>` tagging
+
+---
+
+## 🔑 Prompt Engineering Techniques — Full Breakdown
+
+| Technique | Implementation | Feature |
+|---|---|---|
+| **Role-based System Instructions** | `"You are Nutri-Guardian Pro Clinical Auditor"` persona | All features |
+| **Structured JSON Schema Output** | `responseMimeType: application/json` + field-level schema | Scanner, Comparison, Pantry |
+| **Dynamic Context Injection** | Disease type, age, weight injected per-request | All features |
+| **Zero-shot Classification** | 🟢/🟡/🔴 safety status with reasoning | Scanner |
+| **Constraint-aware Generation** | Disease dietary restrictions enforced in recipe prompts | Neural Recipe Lab |
+| **XML Sandwich Defense** | `<patient_data>...</patient_data>` wraps user input to prevent injection | Symptom Checker |
+| **Few-shot Nutritional Reasoning** | `dailyImpact` section contextualizes against WHO targets | Scanner |
+| **RAG Pipeline** | `text-embedding-004` for clinical guideline retrieval via cosine similarity | Backend RAG |
+| **Output Sanitization** | DOMPurify + recursive string sanitizer on all AI responses | All features |
+| **Prompt Validation Guardrail** | System prompt rejects non-food inputs with error status | Scanner |
+| **Barcode Context Enrichment** | Open Food Facts API pre-fills product data to prevent hallucination | Scanner |
+| **Rate Limiting** | Firestore-backed per-user cooldown prevents abuse | Symptom Checker |
+
+---
+
 ## 🛠️ Tech Stack
+
 | Layer | Technology |
 |---|---|
-| Frontend | React 19, TypeScript, Vite |
-| Routing | React Router v7 |
-| State | Zustand + Dexie.js (IndexedDB) + localStorage |
-| AI | Google Gemini 2.5 Flash via `@google/genai` |
-| Backend | Firebase Cloud Functions (Node.js 20) |
-| Hosting | Firebase Hosting + Google Cloud Run |
-| Icons | Lucide React |
-| Animation | Framer Motion |
-| PDF Export | jsPDF + jspdf-autotable |
-| Security | DOMPurify, input sanitization, Zod |
+| **Frontend** | React 19, TypeScript 5.8, Vite 6 |
+| **Routing** | React Router v7 |
+| **State Management** | Zustand (global) + Dexie.js (IndexedDB) + localStorage |
+| **AI** | Google Gemini 2.0 Flash via `@google/genai` (server-side only) |
+| **Backend** | Firebase Cloud Functions (Node.js 20) |
+| **Database** | Cloud Firestore (RAG embeddings + rate limiting) |
+| **Hosting** | Firebase Hosting + Google Cloud Run (Docker/Nginx) |
+| **Security** | DOMPurify, Zod input validation, CORS policy, API key proxying |
+| **PDF Export** | jsPDF + jspdf-autotable |
+| **Icons/Animation** | Lucide React + Framer Motion |
+| **External APIs** | Open Food Facts (barcode enrichment) |
+
 ---
+
+## 🚀 Running Locally
+
+### Prerequisites
+- Node.js ≥ 18 & npm
+- A Google Gemini API Key from [Google AI Studio](https://aistudio.google.com/)
+- Firebase CLI: `npm install -g firebase-tools`
+
+### 1. Frontend Setup
+```bash
+# Install dependencies
+npm install
+
+# Add your Gemini API key (for local backend only)
+echo "GEMINI_API_KEY=your_key_here" > .env.local
+
+# Start Vite dev server
+npm run dev
+# → Opens on http://localhost:3000
+```
+
+### 2. Backend Setup (Firebase Functions)
+```bash
+cd functions
+npm install
+
+# Start the local Firebase Functions emulator
+firebase emulators:start --only functions
+# → Functions available at http://localhost:5001
+```
+
+> The frontend dev server automatically proxies to `localhost:5001` in development mode via `VITE_BACKEND_URL`.
+
+### 3. Production Build
+```bash
+npm run build
+# Outputs to /dist — ready for Firebase Hosting or Cloud Run
+```
+
+---
+
+## ☁️ Cloud Run Deployment
+
+This project ships with a production-ready Dockerfile:
+
+```bash
+# Deploy to Google Cloud Run in one command
+gcloud run deploy nutri-guardian-pro \
+  --source . \
+  --port 8080 \
+  --allow-unauthenticated \
+  --set-env-vars VITE_BACKEND_URL=https://your-functions-url.cloudfunctions.net
+```
+
+---
+
+## 📁 Project Structure
+
+```
+nutri-guardian-pro/
+├── App.tsx                   # Root layout, routing, global state, search
+├── geminiService.ts          # AI integration layer (fetch → Cloud Functions proxy)
+├── types.ts                  # Shared TypeScript interfaces
+├── constants.tsx             # Disease-specific clinical guardrails & limits
+├── store.ts / db.ts          # Zustand state + Dexie.js IndexedDB
+├── Dockerfile                # Production container (Nginx + React build)
+├── nginx.conf                # SPA routing config for Cloud Run
+├── components/
+│   ├── Dashboard.tsx         # Daily health budget + eating log
+│   ├── Scanner.tsx           # Camera scan + barcode → Gemini deep audit
+│   ├── FridgeManager.tsx     # Smart pantry + Neural Recipe Lab
+│   ├── SymptomChecker.tsx    # AI clinical consultation (text triage)
+│   ├── EatingHistory.tsx     # Nutrition log + PDF export
+│   └── ProfileSettings.tsx  # Chronic disease profile + custom restrictions
+└── functions/src/
+    └── index.ts              # All Firebase Cloud Functions (secure AI proxy)
+        ├── searchProductProxy
+        ├── analyzeImageProxy
+        ├── suggestMealProxy
+        ├── compareProductsProxy
+        ├── clinicalConsult         (+ Firestore rate limiting)
+        ├── analyzeLabReport        (+ RAG context + sandwich defense)
+        └── searchClinicalGuidelines (RAG retrieval with cosine similarity)
+```
+
+---
+
+## 🌍 Impact & Market Opportunity
+
+| Metric | Value |
+|---|---|
+| Target users (India) | 101M diabetics + 220M hypertensives + 7.5M CKD patients |
+| Daily food decisions per patient | ~3-5 critical choices |
+| Existing solution gap | Generic nutrition apps with no disease personalization |
+| Nutri-Guardian's advantage | Real-time, personalized, disease-aware clinical verdicts |
+
+**Use cases enabled:**
+- ✅ Safe grocery shopping with live barcode scanning
+- ✅ Clinical pantry management with AI-generated safe recipes
+- ✅ Head-to-head food product comparison for safer choices
+- ✅ Symptom triage integrated with nutritional context
+- ✅ Full eating history log with PDF clinical reports for doctor visits
+
+---
+
 ## 👤 Team
-**Solo Submission** — Built for Hack2Skill PromptWars 2025.
+
+**Solo Submission** — Vinit Chaurasia  
+Built for Hack2Skill PromptWars 2026 — Gemini AI Track
+
 ---
-*⚠️ Disclaimer: Nutri-Guardian Pro is an AI-assisted informational tool. It is not a substitute for professional medical advice, diagnosis, or treatment. Always consult a qualified physician for medical decisions.*
 
-# Run and deploy your AI Studio app
-
-This contains everything you need to run your app locally.
-
-View your app in AI Studio: https://ai.studio/apps/6ffe41a6-f7ed-4202-9378-87e1165b9e1d
-
-## Run Locally
-
-**Prerequisites:**  Node.js
-
-
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+*⚠️ Medical Disclaimer: Nutri-Guardian Pro is an AI-assisted informational tool. It is not a substitute for professional medical advice, diagnosis, or treatment. All clinical data is generated by AI and should be reviewed by a qualified physician before acting on it.*
