@@ -9,3 +9,10 @@
   0%, 100% { transform: scaleY(0.4); }
   50% { transform: scaleY(1.2); }
 }
+
+@layer utilities {
+  .doctor-mode {
+    filter: invert(1) hue-rotate(180deg) contrast(1.1) brightness(1.2);
+    /* High contrast mode makes everything dark but keeps hue relatively similar */
+  }
+}

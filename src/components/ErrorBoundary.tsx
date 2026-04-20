@@ -1,15 +1,16 @@
 
 import React from 'react';
 
-interface State { hasError: boolean; error: Error | null }
+interface Props { children?: React.ReactNode; }
+interface State { hasError: boolean; error: Error | null; }
 
 /**
  * ErrorBoundary — wraps the entire app.
  * Catches render/API failures so a single crash never takes down the whole UI.
  * Matches the existing app design: white bento-card style, emerald accents.
  */
-class ErrorBoundary extends React.Component<React.PropsWithChildren, State> {
-  constructor(props: React.PropsWithChildren) {
+class ErrorBoundary extends React.Component<Props, State> {
+  constructor(props: Props) {
     super(props);
     this.state = { hasError: false, error: null };
   }

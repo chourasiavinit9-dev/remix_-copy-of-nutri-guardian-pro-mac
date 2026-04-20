@@ -63,6 +63,7 @@ const AppContent = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [searchResult, setSearchResult] = useState<AnalysisResult | null>(null);
   const [notifications, setNotifications] = useState<{id: string, title: string, body: string, time: string, type: 'warning' | 'info' | 'success'}[]>([]);
+  const [isDoctorMode, setIsDoctorMode] = useState(false);
 
   // PERSISTENCE & AUTO-RESET LOGIC
   useEffect(() => {
@@ -219,7 +220,7 @@ const AppContent = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-['Plus_Jakarta_Sans'] pb-32 lg:pb-0">
+    <div className={`min-h-screen bg-[#F8FAFC] flex flex-col font-['Plus_Jakarta_Sans'] pb-32 lg:pb-0 ${isDoctorMode ? 'doctor-mode' : ''}`}>
       <header className="sticky top-0 z-50 glass border-b border-slate-200/60 px-6 py-4 flex justify-between items-center transition-all">
         <div className="flex items-center gap-3">
           <Link to="/" className="flex items-center gap-3">
@@ -242,6 +243,13 @@ const AppContent = () => {
             <span className="text-[11px] font-bold text-slate-600">{profile.chronicDisease} Monitoring</span>
           </div>
           <div className="flex gap-2">
+            <button 
+              onClick={() => setIsDoctorMode(!isDoctorMode)}
+              className={`p-2.5 transition-colors bg-white border border-slate-200 rounded-xl shadow-sm hover:border-blue-200 ${isDoctorMode ? 'text-blue-600 bg-blue-50 border-blue-500' : 'text-slate-400'}`}
+              title="Toggle High-Contrast Doctor Mode"
+            >
+              <Stethoscope size={18} />
+            </button>
             <button 
               onClick={() => { setIsSearchOpen(true); setIsNotificationsOpen(false); }}
               className="p-2.5 text-slate-400 hover:text-emerald-500 transition-colors bg-white border border-slate-200 rounded-xl shadow-sm hover:border-emerald-200"

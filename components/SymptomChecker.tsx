@@ -1,8 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Search, Loader2, ShieldAlert, Pill, Stethoscope, ArrowRight, Activity, X, Info, HelpCircle, Mic, MicOff, Volume2, StopCircle, MessageSquareText, Sparkles, Brain, AlertCircle, CheckCircle2, ShieldCheck, HeartPulse, UserRound, ClipboardList, Settings, Lock, RefreshCw, AlertTriangle, ShieldX, RotateCcw, Languages, UserCheck } from 'lucide-react';
 import { UserProfile, SymptomAnalysis } from '../types';
-import { analyzeSymptoms, encode, decode, decodeAudioData } from '../geminiService';
-import { GoogleGenAI, LiveServerMessage, Modality } from '@google/genai';
+import { analyzeSymptoms } from '../geminiService';
 import { BentoSkeleton, AudioVisualizer } from './Common';
 
 interface SymptomCheckerProps {
@@ -40,11 +39,13 @@ const SymptomChecker: React.FC<SymptomCheckerProps> = ({ profile }) => {
     if (!symptoms.trim() || isAnalyzing) return;
     setIsAnalyzing(true);
     setResult(null);
+    setErrorMessage(null);
     try {
       const analysis = await analyzeSymptoms(symptoms, profile);
       setResult(analysis);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Symptom analysis failed", err);
+      setErrorMessage(err?.message || 'Analysis failed. Please try again.');
     } finally {
       setIsAnalyzing(false);
     }
@@ -66,92 +67,7 @@ const SymptomChecker: React.FC<SymptomCheckerProps> = ({ profile }) => {
   }, []);
 
   const startLiveSession = async () => {
-    setIsInitializing(true); setErrorMessage(null);
-    try {
-      const inputCtx = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 16000 });
-      const outputCtx = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
-      if (inputCtx.state === 'suspended') await inputCtx.resume();
-      if (outputCtx.state === 'suspended') await outputCtx.resume();
-      audioContextRef.current = inputCtx; outputAudioContextRef.current = outputCtx;
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      setPermissionState('granted'); streamRef.current = stream;
-      
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-      const sessionPromise = ai.live.connect({
-        model: 'gemini-2.5-flash-native-audio-preview-12-2025',
-        config: {
-          responseModalities: [Modality.AUDIO],
-          speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Kore' } } },
-          inputAudioTranscription: {}, outputAudioTranscription: {},
-          systemInstruction: `You are Nutri-Guardian Multilingual Live Clinical Assistant.
-          PATIENT CONTEXT: Age ${profile.age}, Condition: ${profile.chronicDisease}.
-          
-          BILINGUAL PROTOCOL:
-          - You are fluent in English and Hindi (हिंदी).
-          - CRITICAL: For every turn, provide your response in BOTH English and Hindi.
-          - Format: "English response / हिंदी में जवाब"
-
-          CLINICAL MISSION:
-          1. Perform real-time symptom triage based on clinical standards.
-          2. Discuss likely causes for their symptoms relative to ${profile.chronicDisease}.
-          3. Recommend safe OTC medications ONLY if they do not contraindicate with their condition.
-          4. Provide strict "What to Avoid" instructions.
-          5. Identify Red Flags requiring immediate ER attention.
-
-          Tone: Highly clinical, precise, yet empathetic. Always end with a reminder to see a human doctor.`
-        },
-        callbacks: {
-          onopen: () => {
-            setIsInitializing(false); setIsLiveActive(true); setTranscriptions([]);
-            const source = inputCtx.createMediaStreamSource(stream);
-            const scriptProcessor = inputCtx.createScriptProcessor(4096, 1, 1);
-            scriptProcessor.onaudioprocess = (e) => {
-              const inputData = e.inputBuffer.getChannelData(0);
-              const l = inputData.length; const int16 = new Int16Array(l);
-              for (let i = 0; i < l; i++) int16[i] = inputData[i] * 32768;
-              const pcmBlob = { data: encode(new Uint8Array(int16.buffer)), mimeType: 'audio/pcm;rate=16000' };
-              sessionPromise.then(session => { if (session) session.sendRealtimeInput({ media: pcmBlob }); });
-            };
-            source.connect(scriptProcessor); scriptProcessor.connect(inputCtx.destination);
-          },
-          onmessage: async (message: LiveServerMessage) => {
-            if (message.serverContent?.interrupted) {
-              sourcesRef.current.forEach(s => { try { s.stop(); } catch(e) {} });
-              sourcesRef.current.clear();
-              setIsAiSpeaking(false);
-            }
-
-            const audioData = message.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
-            if (audioData && outputCtx) {
-              setIsAiSpeaking(true);
-              nextStartTimeRef.current = Math.max(nextStartTimeRef.current, outputCtx.currentTime);
-              const buffer = await decodeAudioData(decode(audioData), outputCtx, 24000, 1);
-              const source = outputCtx.createBufferSource();
-              source.buffer = buffer; source.connect(outputCtx.destination);
-              source.start(nextStartTimeRef.current); nextStartTimeRef.current += buffer.duration;
-              sourcesRef.current.add(source); 
-              source.onended = () => {
-                sourcesRef.current.delete(source);
-                if (sourcesRef.current.size === 0) setIsAiSpeaking(false);
-              };
-            }
-            if (message.serverContent?.inputTranscription) { transcriptionBufferRef.current.user += message.serverContent.inputTranscription.text; setCurrentTranscription(transcriptionBufferRef.current.user); }
-            if (message.serverContent?.outputTranscription) { transcriptionBufferRef.current.model += message.serverContent.outputTranscription.text; setCurrentTranscription(transcriptionBufferRef.current.model); }
-            if (message.serverContent?.turnComplete) {
-              const userText = transcriptionBufferRef.current.user; const modelText = transcriptionBufferRef.current.model;
-              setTranscriptions(prev => [...prev, ...(userText ? [{ role: 'user' as const, text: userText }] : []), ...(modelText ? [{ role: 'assistant' as const, text: modelText }] : [])]);
-              transcriptionBufferRef.current = { user: '', model: '' }; setCurrentTranscription('');
-            }
-          },
-          onclose: () => { setIsLiveActive(false); setIsInitializing(false); },
-          onerror: (e) => { setErrorMessage("Neural link disrupted."); setIsLiveActive(false); setIsInitializing(false); }
-        }
-      });
-      sessionRef.current = await sessionPromise;
-    } catch (err: any) {
-      setIsInitializing(false); setIsLiveActive(false);
-      if (err.name === 'NotAllowedError') setPermissionState('denied'); else setErrorMessage("Mic hardware unavailable.");
-    }
+    setErrorMessage("Live Voice features are disabled in this deployment to prevent API Key exposure. The backend text clinical triage remains active.");
   };
 
   useEffect(() => { return () => stopLiveSession(); }, [stopLiveSession]);
@@ -201,6 +117,15 @@ const SymptomChecker: React.FC<SymptomCheckerProps> = ({ profile }) => {
                 Run Clinical Analysis
               </button>
             </form>
+            {errorMessage && !isAnalyzing && (
+              <div className="mt-4 bg-rose-50 border border-rose-200 p-5 rounded-2xl flex items-start gap-3 animate-in slide-in-from-top-2">
+                <AlertCircle size={18} className="text-rose-500 mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-xs font-black text-rose-900 mb-0.5">Analysis Error</p>
+                  <p className="text-[11px] font-bold text-rose-700 leading-relaxed">{errorMessage}</p>
+                </div>
+              </div>
+            )}
           </div>
 
           {isAnalyzing && (

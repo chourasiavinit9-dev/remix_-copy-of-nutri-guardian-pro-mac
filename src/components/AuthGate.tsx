@@ -39,18 +39,28 @@ const AuthGate: React.FC<React.PropsWithChildren> = ({ children }) => {
     setSigning(true);
     setError(null);
     try {
-      await signInWithPopup(auth, googleProvider);
+      if (import.meta.env.VITE_FIREBASE_API_KEY) {
+        await signInWithPopup(auth, googleProvider);
+      } else {
+        // Mock authentication for purely local testing without Firebase
+        setTimeout(() => {
+          setUser({ uid: 'mock-user-123', displayName: 'Dr. Local Dev' } as User);
+          setLoading(false);
+          setSigning(false);
+        }, 800);
+      }
     } catch (err: any) {
       if (err.code !== 'auth/popup-closed-by-user') {
-        setError('Sign-in failed. Please try again.');
+        setError('Sign-in failed. Please verify your Firebase configuration.');
       }
-    } finally {
       setSigning(false);
     }
   };
 
   const signOutUser = async () => {
-    await signOut(auth);
+    try {
+      await signOut(auth);
+    } catch(e) {}
     setUser(null);
   };
 

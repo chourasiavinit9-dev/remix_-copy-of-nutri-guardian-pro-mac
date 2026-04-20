@@ -31,6 +31,7 @@ const FridgeManager: React.FC<FridgeProps> = ({ profile, fridge, setFridge, onLo
   const [isGenerating, setIsGenerating] = useState(false);
   const [meal, setMeal] = useState<MealSuggestion | null>(null);
   const [isLogged, setIsLogged] = useState(false);
+  const [mealError, setMealError] = useState<string | null>(null);
 
   const addItem = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,8 +61,8 @@ const FridgeManager: React.FC<FridgeProps> = ({ profile, fridge, setFridge, onLo
     setIsGenerating(true); 
     setMeal(null); 
     setIsLogged(false);
+    setMealError(null);
     
-    // If a specific item is focused, we move it to the front of the list for the AI prompt
     const itemsToAnalyze = focusItem ? [focusItem, ...fridge.filter(i => i !== focusItem)] : fridge;
     
     try {
@@ -69,8 +70,9 @@ const FridgeManager: React.FC<FridgeProps> = ({ profile, fridge, setFridge, onLo
       if (result && result.mealSuggestion) {
         setMeal(result.mealSuggestion);
       }
-    } catch (err) { 
-      console.error("Meal generation failed:", err); 
+    } catch (err: any) { 
+      console.error("Meal generation failed:", err);
+      setMealError(err?.message || 'Failed to generate recipe. Please try again.');
     } finally { 
       setIsGenerating(false); 
     }
@@ -186,6 +188,21 @@ const FridgeManager: React.FC<FridgeProps> = ({ profile, fridge, setFridge, onLo
         {isGenerating ? <Loader2 className="animate-spin" size={26} /> : <Sparkles size={26} />}
         <span className="uppercase tracking-[0.2em] text-sm">Launch Neural Recipe Lab</span>
       </button>
+
+      {mealError && !isGenerating && !meal && (
+        <div className="bg-rose-50 border border-rose-200 p-6 rounded-3xl flex items-start gap-4 animate-in slide-in-from-top-2 duration-300">
+          <div className="p-2.5 bg-rose-100 text-rose-600 rounded-2xl shrink-0">
+            <AlertCircle size={20} />
+          </div>
+          <div className="flex-1">
+            <h4 className="text-xs font-black text-rose-900 uppercase tracking-widest mb-1">Neural Lab Error</h4>
+            <p className="text-[11px] font-bold text-rose-700 leading-relaxed">{mealError}</p>
+          </div>
+          <button onClick={() => setMealError(null)} className="text-rose-300 hover:text-rose-500 transition-colors">
+            <X size={16} />
+          </button>
+        </div>
+      )}
 
       {meal && (
         <div className="animate-in zoom-in duration-500 space-y-8">

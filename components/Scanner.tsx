@@ -201,7 +201,7 @@ const Scanner: React.FC<ScannerProps> = ({ profile, onConsume, onSaveComparison 
 
   const handleDiagnosticFailure = (err: any) => {
     console.error("Diagnostic failure:", err);
-    setError({ title: "Audit Connection Error", message: "The neural laboratory could not complete the request. Please try again with a clearer image.", type: 'api' });
+    setError({ title: "Audit Connection Error", message: err?.message || "The neural laboratory could not complete the request. Please try again with a clearer image.", type: 'api' });
     setMode('ERROR');
   };
 
@@ -503,7 +503,7 @@ const Scanner: React.FC<ScannerProps> = ({ profile, onConsume, onSaveComparison 
                 </div>
 
                 <div className="space-y-10">
-                  {Object.entries(groupedIngredients).map(([category, ings]) => {
+                  {Object.entries(groupedIngredients).map(([category, ings]: [string, any]) => {
                     const catInfo = CATEGORY_MAP[category] || CATEGORY_MAP['Other'];
                     const CatIcon = catInfo.icon;
                     return (

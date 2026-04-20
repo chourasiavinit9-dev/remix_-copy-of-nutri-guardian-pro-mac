@@ -152,7 +152,7 @@ export const analyzeLabReport = functions.https.onRequest(async (req, res) => {
       `;
 
       const response = await ai.models.generateContent({
-        model: 'gemini-1.5-pro',
+        model: 'gemini-2.0-flash-lite',
         contents: prompt
       });
 
@@ -204,11 +204,152 @@ export const clinicalConsult = functions.https.onRequest(async (req, res) => {
       `;
 
       const response = await ai.models.generateContent({
-        model: 'gemini-2.0-flash', // Using latest flash
+        model: 'gemini-2.0-flash-lite', // Using latest flash
         contents: prompt
       });
 
       return res.status(200).send({ data: { assessment: response.text } });
+    } catch (error) {
+       console.error(error);
+       return res.status(500).send({ error: 'Internal Server Error' });
+    }
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Proxy Endpoints for App functionality
+// ─────────────────────────────────────────────────────────────────────────────
+const SearchProductSchema = z.object({
+  query: z.string().min(1).max(500),
+  diseaseContext: z.string()
+});
+
+export const searchProductProxy = functions.https.onRequest(async (req, res) => {
+  return cors(req, res, async () => {
+    try {
+      const parsed = SearchProductSchema.safeParse(req.body.data);
+      if (!parsed.success) {
+        return res.status(400).send({ error: 'Invalid payload' });
+      }
+      
+      const { query, diseaseContext } = parsed.data;
+      
+      const SYSTEM_INSTRUCTION = `You are Nutri-Guardian Pro, a clinical nutritional assistant for chronic disease management.
+You perform a "Deep Clinical Audit" of food labels and products.
+
+CORE SCAN PROTOCOLS:
+1. VALIDATION: If the input (text or image) contains offensive content, is unrelated to food, or is not a consumable product, you MUST return a JSON object with a 'status' of 'ERROR' and a 'medicalWarning' explaining that the item is not a food product or is inappropriate.
+2. NUTRIENT EXTRACTION: Calories, Sodium (mg), Sugar (g), Protein (g), Vitamins (as % Daily Value). Ensure all values are numbers.
+3. SAFETY CHECK (RED FLAGS): Scan ingredients for specific medical triggers.
+4. INGREDIENT LABORATORY: Categorize EACH ingredient.
+5. CLINICAL OPTIMIZATION: Provide specific preparation or usage hacks to lower nutrient risks.
+6. CLINICAL SCORING: Assign 'clinicalScore' (1-5) based on disease adherence.
+
+RESPONSE FORMAT: ALWAYS return valid JSON within a code block.`;
+      
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.0-flash-lite',
+        contents: `Search and analyze the nutritional profile of "${query}" for a patient with ${diseaseContext}. Provide a complete clinical audit.`,
+        config: {
+          systemInstruction: SYSTEM_INSTRUCTION,
+          responseMimeType: "application/json"
+        }
+      });
+
+      return res.status(200).send({ data: { result: response.text } });
+    } catch (error) {
+       console.error(error);
+       return res.status(500).send({ error: 'Internal Server Error' });
+    }
+  });
+});
+
+// Proxy for analyzing product images
+const AnalyzeImageSchema = z.object({
+  imageB64: z.string().min(1),
+  diseaseContext: z.string()
+});
+
+export const analyzeImageProxy = functions.https.onRequest(async (req, res) => {
+  return cors(req, res, async () => {
+    try {
+      const parsed = AnalyzeImageSchema.safeParse(req.body.data);
+      if (!parsed.success) {
+        return res.status(400).send({ error: 'Invalid payload' });
+      }
+      
+      const { imageB64, diseaseContext } = parsed.data;
+      
+      const SYSTEM_INSTRUCTION = `You are Nutri-Guardian Pro, a clinical nutritional assistant for chronic disease management.
+You perform a "Deep Clinical Audit" of food labels and products.
+
+CORE SCAN PROTOCOLS:
+1. VALIDATION: If the image contains offensive content, is unrelated to food, or is not a consumable product, return a JSON object with a 'status' of 'ERROR' and a 'medicalWarning' explaining why.
+2. NUTRIENT EXTRACTION: Calories, Sodium (mg), Sugar (g), Protein (g), Vitamins (as % Daily Value). All numbers.
+3. SAFETY CHECK: Scan ingredients for specific medical triggers based on patient condition.
+4. RESPONSE FORMAT: ALWAYS return ONLY valid JSON within a code block.`;
+
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.0-flash-lite',
+        contents: {
+          parts: [
+            { inlineData: { data: imageB64, mimeType: 'image/jpeg' } },
+            { text: `Perform a deep clinical audit of this product label for a patient with ${diseaseContext}. Extract all nutrients as numbers. Return only valid JSON.` }
+          ]
+        } as any,
+        config: {
+          systemInstruction: SYSTEM_INSTRUCTION,
+          responseMimeType: "application/json"
+        }
+      });
+
+      return res.status(200).send({ data: { result: response.text } });
+    } catch (error) {
+       console.error(error);
+       return res.status(500).send({ error: 'Internal Server Error' });
+    }
+  });
+});
+
+// Proxy for suggesting meals
+const SuggestMealSchema = z.object({
+  ingredients: z.array(z.string()).min(1).max(50),
+  diseaseContext: z.string()
+});
+
+export const suggestMealProxy = functions.https.onRequest(async (req, res) => {
+  return cors(req, res, async () => {
+    try {
+      const parsed = SuggestMealSchema.safeParse(req.body.data);
+      if (!parsed.success) {
+        return res.status(400).send({ error: 'Invalid payload' });
+      }
+      
+      const { ingredients, diseaseContext } = parsed.data;
+      
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.0-flash-lite',
+        contents: `Create a single healthy recipe using some or all of these ingredients: ${ingredients.join(', ')}.
+        Patient context: ${diseaseContext}.
+        
+        Strict JSON format:
+        {
+          "name": "Recipe Name",
+          "prepTime": "15 mins",
+          "difficulty": "Easy",
+          "calories": 400,
+          "macros": {"protein": "20g", "carbs": "45g", "fats": "15g"},
+          "keyIngredients": ["Ingredient 1", "Ingredient 2"],
+          "instructions": ["Step 1", "Step 2"],
+          "healthBenefits": ["Benefit 1", "Benefit 2"],
+          "estimatedNutrients": {"sodium": 200, "sugar": 5, "protein": 20, "vitamins": 30}
+        }`,
+        config: {
+          responseMimeType: "application/json"
+        }
+      });
+
+      return res.status(200).send({ data: { result: response.text } });
     } catch (error) {
        console.error(error);
        return res.status(500).send({ error: 'Internal Server Error' });

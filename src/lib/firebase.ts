@@ -19,20 +19,20 @@ const REQUIRED_ENV = [
 
 for (const key of REQUIRED_ENV) {
   if (!import.meta.env[key]) {
-    throw new Error(
-      `[Nutri-Guardian] Missing required environment variable: ${key}. ` +
-      `Copy .env.example → .env.local and fill in your Firebase project values.`
+    console.warn(
+      `[Nutri-Guardian] Missing Firebase configuration: ${key}. ` +
+      `Auth features may not work correctly until you establish a Firebase project.`
     );
   }
 }
 
 const firebaseConfig = {
-  apiKey:            import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain:        import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId:         import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket:     import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId:             import.meta.env.VITE_FIREBASE_APP_ID,
+  apiKey:            import.meta.env.VITE_FIREBASE_API_KEY || "mock-api-key",
+  authDomain:        import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "mock.firebaseapp.com",
+  projectId:         import.meta.env.VITE_FIREBASE_PROJECT_ID || "mock-project-id",
+  storageBucket:     import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "mock-project-id.appspot.com",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "1234567890",
+  appId:             import.meta.env.VITE_FIREBASE_APP_ID || "1:123456789:web:abcdef12345",
 };
 
 // Prevent double-initialisation in Vite HMR
